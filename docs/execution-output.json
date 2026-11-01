@@ -1,0 +1,196 @@
+{
+  "status": "success",
+  "nodes": {
+    "Run manually": [
+      [
+        {}
+      ]
+    ],
+    "Sample leads (replace with Webhook/Form)": [
+      [
+        {
+          "name": "Mina Park",
+          "email": "mina@example.com",
+          "budget_usd": 1200,
+          "message": "Need a weekly sales report"
+        },
+        {
+          "name": "John Doe",
+          "email": "john[at]example",
+          "budget_usd": 300,
+          "message": "Scrape 3 sites"
+        },
+        {
+          "name": "Aiko Sato",
+          "email": "aiko@example.jp",
+          "budget_usd": 80,
+          "message": "Small Google Sheets fix"
+        },
+        {
+          "name": "",
+          "email": "blank@example.com",
+          "budget_usd": 0,
+          "message": ""
+        }
+      ]
+    ],
+    "USD to KRW rate": [
+      [
+        {
+          "amount": 1,
+          "base": "USD",
+          "date": "2026-10-30",
+          "rates": {
+            "KRW": 1335.27
+          }
+        }
+      ]
+    ],
+    "Validate and score": [
+      [
+        {
+          "name": "Mina Park",
+          "email": "mina@example.com",
+          "budget_usd": 1200,
+          "message": "Need a weekly sales report",
+          "budget_krw": 1602324,
+          "rate_date": "2026-10-30",
+          "tier": "A",
+          "valid": true,
+          "problems": []
+        },
+        {
+          "name": "John Doe",
+          "email": "john[at]example",
+          "budget_usd": 300,
+          "message": "Scrape 3 sites",
+          "budget_krw": 400581,
+          "rate_date": "2026-10-30",
+          "tier": "B",
+          "valid": false,
+          "problems": [
+            "invalid email"
+          ]
+        },
+        {
+          "name": "Aiko Sato",
+          "email": "aiko@example.jp",
+          "budget_usd": 80,
+          "message": "Small Google Sheets fix",
+          "budget_krw": 106822,
+          "rate_date": "2026-10-30",
+          "tier": "C",
+          "valid": true,
+          "problems": []
+        },
+        {
+          "name": "",
+          "email": "blank@example.com",
+          "budget_usd": 0,
+          "message": "",
+          "budget_krw": 0,
+          "rate_date": "2026-10-30",
+          "tier": "C",
+          "valid": false,
+          "problems": [
+            "missing name",
+            "no budget"
+          ]
+        }
+      ]
+    ],
+    "Valid?": [
+      [
+        {
+          "name": "Mina Park",
+          "email": "mina@example.com",
+          "budget_usd": 1200,
+          "message": "Need a weekly sales report",
+          "budget_krw": 1602324,
+          "rate_date": "2026-10-30",
+          "tier": "A",
+          "valid": true,
+          "problems": []
+        },
+        {
+          "name": "Aiko Sato",
+          "email": "aiko@example.jp",
+          "budget_usd": 80,
+          "message": "Small Google Sheets fix",
+          "budget_krw": 106822,
+          "rate_date": "2026-10-30",
+          "tier": "C",
+          "valid": true,
+          "problems": []
+        }
+      ],
+      [
+        {
+          "name": "John Doe",
+          "email": "john[at]example",
+          "budget_usd": 300,
+          "message": "Scrape 3 sites",
+          "budget_krw": 400581,
+          "rate_date": "2026-10-30",
+          "tier": "B",
+          "valid": false,
+          "problems": [
+            "invalid email"
+          ]
+        },
+        {
+          "name": "",
+          "email": "blank@example.com",
+          "budget_usd": 0,
+          "message": "",
+          "budget_krw": 0,
+          "rate_date": "2026-10-30",
+          "tier": "C",
+          "valid": false,
+          "problems": [
+            "missing name",
+            "no budget"
+          ]
+        }
+      ]
+    ],
+    "Qualified: CRM row + alert text": [
+      [
+        {
+          "crm_row": [
+            "Mina Park",
+            "mina@example.com",
+            "A",
+            1200,
+            1602324,
+            "Need a weekly sales report"
+          ],
+          "notify": "New A-tier lead: Mina Park (1,602,324 KRW)"
+        },
+        {
+          "crm_row": [
+            "Aiko Sato",
+            "aiko@example.jp",
+            "C",
+            80,
+            106822,
+            "Small Google Sheets fix"
+          ],
+          "notify": "New C-tier lead: Aiko Sato (106,822 KRW)"
+        }
+      ]
+    ],
+    "Needs human review": [
+      [
+        {
+          "review": "john[at]example",
+          "problems": "invalid email"
+        },
+        {
+          "review": "blank@example.com",
+          "problems": "missing name, no budget"
+        }
+      ]
+    ]
+  }
+}

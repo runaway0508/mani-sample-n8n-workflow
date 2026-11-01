@@ -1,0 +1,186 @@
+{
+  "id": "maniLeadIntake01",
+  "name": "MANI sample - lead intake, validate, convert, route",
+  "nodes": [
+    {
+      "id": "run-manually",
+      "name": "Run manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "sample-leads-(replace-with-web",
+      "name": "Sample leads (replace with Webhook/Form)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [\n  { name: 'Mina Park',  email: 'mina@example.com', budget_usd: 1200, message: 'Need a weekly sales report' },\n  { name: 'John Doe',   email: 'john[at]example',  budget_usd: 300,  message: 'Scrape 3 sites' },\n  { name: 'Aiko Sato',  email: 'aiko@example.jp',  budget_usd: 80,   message: 'Small Google Sheets fix' },\n  { name: '',           email: 'blank@example.com', budget_usd: 0,   message: '' },\n].map(j => ({ json: j }));"
+      }
+    },
+    {
+      "id": "usd-to-krw-rate",
+      "name": "USD to KRW rate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.frankfurter.dev/v1/latest?from=USD&to=KRW",
+        "options": {}
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "validate-and-score",
+      "name": "Validate and score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const rate = $('USD to KRW rate').first().json.rates.KRW;\nconst emailOk = e => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(e || '');\nreturn $('Sample leads (replace with Webhook/Form)').all().map(({ json: l }) => {\n  const problems = [];\n  if (!l.name) problems.push('missing name');\n  if (!emailOk(l.email)) problems.push('invalid email');\n  if (!(l.budget_usd > 0)) problems.push('no budget');\n  const tier = l.budget_usd >= 1000 ? 'A' : l.budget_usd >= 200 ? 'B' : 'C';\n  return { json: { ...l, budget_krw: Math.round(l.budget_usd * rate), rate_date: $('USD to KRW rate').first().json.date,\n                   tier, valid: problems.length === 0, problems } };\n});"
+      }
+    },
+    {
+      "id": "valid?",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "qualified:-crm-row-+-alert-tex",
+      "name": "Qualified: CRM row + alert text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({ json: l }) => ({ json: {\n  crm_row: [l.name, l.email, l.tier, l.budget_usd, l.budget_krw, l.message],\n  notify: `New ${l.tier}-tier lead: ${l.name} (${l.budget_krw.toLocaleString('en-US')} KRW)`,\n}}));"
+      }
+    },
+    {
+      "id": "needs-human-review",
+      "name": "Needs human review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        100
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(({ json: l }) => ({ json: { review: l.email || '(no email)', problems: l.problems.join(', ') } }));"
+      }
+    }
+  ],
+  "connections": {
+    "Run manually": {
+      "main": [
+        [
+          {
+            "node": "Sample leads (replace with Webhook/Form)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample leads (replace with Webhook/Form)": {
+      "main": [
+        [
+          {
+            "node": "USD to KRW rate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "USD to KRW rate": {
+      "main": [
+        [
+          {
+            "node": "Validate and score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and score": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Qualified: CRM row + alert text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Needs human review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {}
+}
